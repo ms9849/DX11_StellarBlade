@@ -24,7 +24,7 @@ float g_fBiasMin, g_fBiasMax;
 //0 ~ 3
 float g_fIntensity;
 
-/* ¹Ì¸® »ı¼ºµÈ Ä¿³Î ·£´ı ³ë¸Öµé */
+/* ë¯¸ë¦¬ ìƒì„±ëœ ì»¤ë„ ëœë¤ ë…¸ë©€ë“¤ */
 float3 g_vRandom[16] =
 {
     float3(0.5381f, 0.1856f, 0.4319f), float3(0.1379f, 0.2486f, 0.4430f),
@@ -42,21 +42,21 @@ float3 Calc_ViewSpace(float fDepth, float2 vTexCoord)
     vTexCoord.y = 1 - vTexCoord.y;
     vTexCoord = vTexCoord * 2.f - 1.f;
     
-    //NDC »óÀÇ °ø°£.
+    //NDC ìƒì˜ ê³µê°„.
     float4 vScreenPos = float4(vTexCoord, fDepth, 1.f);
     float4 vViewSpace = mul(vScreenPos, g_ProjMatrixInv);
     
     /* 
-    ¿Ö Åõ¿µ Çà·ÄÀÇ ¿ªÇà·Ä °öÇÏ±â Àü¿¡ w °öÇÏ±â ¾ÈÇÔ? -> 
-    NDC ÁÂÇ¥¸¸À¸·Î´Â w°ªÀ» ¾Ë ¼ö ¾ø´Â »óÅÂ¶ó¼­, ÀÏ´Ü Åõ¿µÇà·Ä ¿ªÇà·Ä °öÇÏ¸é
-    w°ªÀÌ »ì¾Æ³². -> »ì¾Æ³­ w°ªÀ¸·Î ³ª´©±â Ã³¸®.
+    ì™œ íˆ¬ì˜ í–‰ë ¬ì˜ ì—­í–‰ë ¬ ê³±í•˜ê¸° ì „ì— w ê³±í•˜ê¸° ì•ˆí•¨? -> 
+    NDC ì¢Œí‘œë§Œìœ¼ë¡œëŠ” wê°’ì„ ì•Œ ìˆ˜ ì—†ëŠ” ìƒíƒœë¼ì„œ, ì¼ë‹¨ íˆ¬ì˜í–‰ë ¬ ì—­í–‰ë ¬ ê³±í•˜ë©´
+    wê°’ì´ ì‚´ì•„ë‚¨. -> ì‚´ì•„ë‚œ wê°’ìœ¼ë¡œ ë‚˜ëˆ„ê¸° ì²˜ë¦¬.
     
-    ¾î·Æ´Ù¸é ¸Ó¸´¼ÓÀ¸·Î 
+    ì–´ë µë‹¤ë©´ ë¨¸ë¦¿ì†ìœ¼ë¡œ 
 
-    ºä ½ºÆäÀÌ½º ÁÂÇ¥ -> Åõ¿µÇà·Ä °ö -> w ³ª´©±â -> NDC.
-    NDC¿¡ Åõ¿µ ¿ªÇà·ÄÀ» °öÇÏ¸é ´Ù½Ã w°ªÀÌ »ì¾Æ³ª¼­ ÇØ´ç w°ªÀ¸·Î ³ª´©±â¸¦ ¼öÇàÇÑ´Ù.
+    ë·° ìŠ¤í˜ì´ìŠ¤ ì¢Œí‘œ -> íˆ¬ì˜í–‰ë ¬ ê³± -> w ë‚˜ëˆ„ê¸° -> NDC.
+    NDCì— íˆ¬ì˜ ì—­í–‰ë ¬ì„ ê³±í•˜ë©´ ë‹¤ì‹œ wê°’ì´ ì‚´ì•„ë‚˜ì„œ í•´ë‹¹ wê°’ìœ¼ë¡œ ë‚˜ëˆ„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
 
-    ¿Ü¿ì¼À..
+    ì™¸ìš°ì…ˆ..
     */
     return vViewSpace.xyz / vViewSpace.w;
 }
@@ -65,9 +65,9 @@ float2 Calc_UV(float3 vViewSpacePosition)
 {
     float4 vSamplePosScreen = mul(float4(vViewSpacePosition, 1.f), g_ProjMatrix);
     
-    // z´Â 0 ~ 1, x,y´Â -1 ~ 1·Î °íÁ¤.
+    // zëŠ” 0 ~ 1, x,yëŠ” -1 ~ 1ë¡œ ê³ ì •.
     vSamplePosScreen.xyz /= vSamplePosScreen.w;
-    // x,y´Â 0 ~ 1·Î (UV°ªÀ¸·Î) º¯È¯.
+    // x,yëŠ” 0 ~ 1ë¡œ (UVê°’ìœ¼ë¡œ) ë³€í™˜.
     vSamplePosScreen.x = vSamplePosScreen.x * 0.5f + 0.5f;
     vSamplePosScreen.y = 1.f - vSamplePosScreen.y;
     
@@ -108,10 +108,10 @@ PS_OUT_BACKBUFFER PS_MAIN_SSAO(PS_IN In)
     float3 vViewPos = Calc_ViewSpace(fDepth, In.vTexcoord);
     
     float3 vNormal = normalize(g_NormalTexture.Sample(DefaultSampler, In.vTexcoord).xyz * 2.f - 1.f);
-    // ºä °ø°£À¸·Î ³ë¸Ö º¯È¯
+    // ë·° ê³µê°„ìœ¼ë¡œ ë³€í™˜
     vNormal = normalize(mul(vNormal, (float3x3) g_ViewMatrix));
 
-    // TBN »ı¼º. 
+    // TBN ìƒì„±. 
     int iX = (int) (In.vTexcoord.x * g_iWinSizeX) % 4;
     int iY = (int) (In.vTexcoord.y * g_iWinSizeY) % 4;
     int iIdx = iY * 4 + iX;
@@ -119,7 +119,7 @@ PS_OUT_BACKBUFFER PS_MAIN_SSAO(PS_IN In)
     float3 vRandomVec = g_NoiseValue[iIdx];
     float3 vTangent = normalize(vRandomVec - vNormal * dot(vRandomVec, vNormal));
     float3 vBitangent = cross(vNormal, vTangent);
-    // TBN -> Normal ÁÂÇ¥°è·Î º¯È¯ÇØÁÖ´Â ¿ªÇÒÀ» ÇÑ´Ù.
+    // TBN -> Normal ì¢Œí‘œê³„ë¡œ ë³€í™˜í•´ì£¼ëŠ” ì—­í• ì„ í•œë‹¤.
     float3x3 TBN = float3x3(vTangent, vBitangent, vNormal);
 
     float fOcclusion = 0.f;
@@ -128,17 +128,17 @@ PS_OUT_BACKBUFFER PS_MAIN_SSAO(PS_IN In)
     {
         float3 vSample = g_vRandom[i];
         
-        // ¹İ±¸ ¿µ¿ªÀ¸·Î º¯È¯
+        // ë°˜êµ¬ ì˜ì—­ìœ¼ë¡œ ë³€í™˜
         if (vSample.z < 0.0f)
         {
             vSample.z = -vSample.z;
         }
 
-        //Sample Pos¸¦ ³ë¸ÖÁÂÇ¥°è ¾ÈÀÇ ¹İ±¸ ¿µ¿ªÀ¸·Î ²ø¾îµéÀÎ´Ù.
+        //Sample Posë¥¼ ë·° ìŠ¤í˜ì´ìŠ¤ ì•ˆì˜ ë°˜êµ¬ ì˜ì—­ìœ¼ë¡œ ëŒì–´ë“¤ì¸ë‹¤.
         float3 vSamplePos = mul(vSample, TBN);
         vSamplePos = vViewPos + vSamplePos * fRadius;
         
-        // Åõ¿µ Çà·Ä °ö
+        // íˆ¬ì˜ í–‰ë ¬ ê³±
         float4 vOffset = float4(vSamplePos, 1.0f);
         vOffset = mul(vOffset, g_ProjMatrix);
         vOffset.xy /= vOffset.w;
@@ -151,22 +151,22 @@ PS_OUT_BACKBUFFER PS_MAIN_SSAO(PS_IN In)
         
         float fSampleDepthNDC = g_DepthTexture.Sample(DefaultSampler, vOffsetUV).r;
         float3 vGeoPos = Calc_ViewSpace(fSampleDepthNDC, vOffsetUV);
-        float fGeoZ = vGeoPos.z; //½ÇÁ¦ geometry view-space Z
+        float fGeoZ = vGeoPos.z; //ì‹¤ì œ geometry view-space Z
 
         float fDeltaZ = abs(vViewPos.z - fGeoZ) + 0.001f;
 
-        // Range Check ¼öÁ¤
+        // Range Check ìˆ˜ì •
         float fRangeCheck = 1.0f - saturate(fDeltaZ / fRadius);
 
-        // bias´Â °íÁ¤°ª ±ÇÀå
-        float fBias = g_fBiasMin; // ¶Ç´Â 0.01f;
+        // biasëŠ” ê³ ì •ê°’ ê¶Œì¥
+        float fBias = g_fBiasMin; // ë˜ëŠ” 0.01f;
 
-        // occlusion Á¶°Ç
+        // occlusion ì¡°ê±´
         if (fGeoZ <= vSamplePos.z - fBias)
             fOcclusion += fRangeCheck;
     }
     
-    // »ùÇÃ¸µ Æò±Õ
+    // ìƒ˜í”Œë§ í‰ê· 
     fOcclusion = 1.0f - (fOcclusion / iSampleCount);
 
     fOcclusion = pow(fOcclusion, g_fIntensity);
@@ -198,7 +198,7 @@ PS_OUT_BACKBUFFER PS_MAIN_BLUR_X(PS_IN In)
     return Out;
 }
 
-// ºí·¯ y±îÁö Ã³¸®ÇÏ°í ³»º¸³»±â
+// ë¸”ëŸ¬ yê¹Œì§€ ì²˜ë¦¬í•˜ê³  ë‚´ë³´ë‚´ê¸°
 PS_OUT_BACKBUFFER PS_MAIN_COMBINE(PS_IN In)
 {
     PS_OUT_BACKBUFFER Out;
@@ -244,7 +244,7 @@ technique11 DefaultTechnique
         PixelShader = compile ps_5_0 PS_MAIN_BLUR_X();
     }
 
-    //±âÁ¸ ·»´õÅ¸°ÙÀ¸·Î ÇÕ¼ºÇØ¼­ ³»º¸³»±â À§ÇÑ ·»´õÅ¸°Ù.
+    //ê¸°ì¡´ ë Œë”íƒ€ê²Ÿìœ¼ë¡œ í•©ì„±í•´ì„œ ë‚´ë³´ë‚´ê¸° ìœ„í•œ ë Œë”íƒ€ê²Ÿ.
     pass Combine
     {
         SetRasterizerState(RS_Default);
